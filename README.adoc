@@ -1,0 +1,48 @@
+= Photon：DBCP vs HikariCP 深究
+
+调试将数据库连接池从 DBCP 切换到 HikariCP 后，进行批量插入数据时，返回结果不再是插入数据的数量，而是在 JDBC 层面返回 `-2`，在 iBATIS 层面统计时，将结果为 `-2` 的不做处理，如果都是 `-2`，则结果为 `0`。
+
+结果的统计流程在 `com.ibatis.sqlmap.engine.execution.SqlExecutor.Batch.executeBatch`。
+
+
+
+== 问题重现
+
+=== 配置数据库
+
+在数据库中增加相应的库及表：
+
+[source,sql]
+----
+CREATE DATABASE employees CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci; <1>
+
+CREATE TABLE `employees` (
+  `emp_no` int NOT NULL,
+  `birth_date` date NOT NULL,
+  `first_name` varchar(14) NOT NULL,
+  `last_name` varchar(16) NOT NULL,
+  `gender` enum('M','F') NOT NULL,
+  `hire_date` date NOT NULL,
+  PRIMARY KEY (`emp_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci; <1>
+----
+<1> `utf8mb4_0900_ai_ci` 应该是在 MySQL 8.x 开始支持的；如果在 MySQL 5.7.x 执行时报错，请 将 `utf8mb4_0900_ai_ci` 替换为 `utf8mb4_unicode_ci`。
+
+在 `src/main/resources/config.properties` 中修改数据库配置信息。
+
+=== 运行程序，重新问题
+
+使用 Maven 的 `profiles` 来区分 DBCP 和 HikariCP。默认是 HikariCP，可以通过指定 `dbcp` 来启用 DBCP。
+
+在 IntelliJ IDEA 中，点击 `docs/api.http` 中 HTTP 请求来发起操作。
+
+== 调试笔记
+
+=== DBCP
+
+com.mysql.jdbc.ConnectionImpl.useServerPreparedStmts = false
+
+com.mysql.jdbc.PreparedStatement.getInstance(com.mysql.jdbc.MySQLConnection, java.lang.String, java.lang.String)
+
+
+com.mysql.jdbc.StatementImpl.executeBatch -- 为什么在 DBCP 时，始终不能通过做个方法进入到 `com.mysql.jdbc.StatementImpl.executeBatchInternal`？ 奇怪的是，在使用 HikariCP 时，却可以一下子就进入。

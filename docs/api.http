@@ -1,0 +1,20 @@
+### Get the data to invoke save method
+GET http://localhost:8080/employee/10001
+
+### Save to trigger batchInsert method
+GET http://localhost:8080/employee/save
+
+### update the inserted data
+GET http://localhost:8080/employee/update
+
+### Get the data to check save result
+GET http://localhost:8080/employee/list
+
+### delete the inserted data
+GET http://localhost:8080/employee/delete
+
+# SQL: select the inserted data
+# select * from employees where emp_no > 119010000;
+
+# SQL: delete the inserted data
+# delete from employees where emp_no > 119010000;

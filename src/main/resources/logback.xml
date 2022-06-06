@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 日志样式 -->
+    <property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{80}[%L] - %msg%n"/>
+
+    <!-- 将 JUL 的日志级别映射为 logback 的日志级别 -->
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder charset="UTF-8">
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.diguage" level="DEBUG"/>
+    <logger name="java.sql" level="DEBUG"/>
+    <logger name="com.ibatis" level="DEBUG"/>
+    <logger name="org.springframework.orm" level="DEBUG"/>
+    <logger name="org.springframework.transaction" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
+

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="Employee">
+    <insert id="save" parameterClass="com.diguage.photon.domain.Employee">
+        insert into employees(emp_no, birth_date, first_name, last_name, gender, hire_date)
+        values (#empNo#, #birthDate#, #firstName#, #lastName#, #gender#, #hireDate#)
+    </insert>
+
+    <select id="get" resultClass="com.diguage.photon.domain.Employee" parameterClass="long">
+        select emp_no     AS empNo,
+               birth_date AS birthDate,
+               first_name AS firstName,
+               last_name  AS lastName,
+               gender,
+               hire_date  AS hireDate
+        from employees
+        where emp_no = #value#
+    </select>
+
+    <select id="find" resultClass="com.diguage.photon.domain.Employee">
+        select emp_no     AS empNo,
+               birth_date AS birthDate,
+               first_name AS firstName,
+               last_name  AS lastName,
+               gender,
+               hire_date  AS hireDate
+        from employees
+        order by emp_no desc
+            limit #rowStart#, #rowEnd#
+    </select>
+
+    <update id="update" parameterClass="com.diguage.photon.domain.Employee">
+        update employees
+        set hire_date = #hireDate#
+        where emp_no = #empNo#
+    </update>
+
+    <delete id="delete">
+        delete
+        from employees
+        where emp_no > 119010000
+    </delete>
+</sqlMap>

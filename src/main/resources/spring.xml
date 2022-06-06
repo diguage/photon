@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd"
+       default-autowire="byName">
+
+    <context:component-scan base-package="com.diguage"/>
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="locations">
+            <list>
+                <value>classpath:config.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="myDataSource"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="myDataSource"/>
+    </bean>
+
+    <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocation" value="classpath:sqlmap-config.xml"/>
+    </bean>
+
+    <bean id="employeeDao" class="com.diguage.photon.dao.EmployeeDao">
+        <property name="dataSource" ref="myDataSource"/>
+        <property name="sqlMapClient" ref="sqlMapClient"/>
+    </bean>
+
+    <bean id="employeeService" class="com.diguage.photon.service.EmployeeService">
+        <property name="employeeDao" ref="employeeDao"/>
+    </bean>
+
+    <beans profile="dbcp">
+        <!--  success to batchInsert  -->
+        <bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource" primary="true">
+            <property name="driverClassName" value="${db.jdbc.driverClassName}"/>
+            <property name="url" value="${db1.jdbc.url}"/>
+            <property name="username" value="${db1.jdbc.username}"/>
+            <property name="password" value="${db1.jdbc.password}"/>
+            <property name="maxActive" value="20"/>
+            <property name="maxIdle" value="3"/>
+            <property name="maxWait" value="15000000"/>
+            <property name="timeBetweenEvictionRunsMillis" value="60000000"/>
+            <property name="minEvictableIdleTimeMillis" value="180000000"/>
+        </bean>
+    </beans>
+
+    <beans profile="hikari">
+        <!--  fail to batchInsert  -->
+        <bean id="myDataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close" primary="true">
+            <property name="driverClassName" value="${db.jdbc.driverClassName}"/>
+            <property name="jdbcUrl" value="${db1.jdbc.url}"/>
+            <property name="username" value="${db1.jdbc.username}"/>
+            <property name="password" value="${db1.jdbc.password}"/>
+            <property name="readOnly" value="${db.hikari.readOnly}"/>
+            <property name="connectionTimeout" value="${db.hikari.connectionTimeout}"/>
+            <property name="validationTimeout" value="${db.hikari.validationTimeout}"/>
+            <property name="idleTimeout" value="${db.hikari.idleTimeout}"/>
+            <property name="maxLifetime" value="${db.hikari.maxLifetime}"/>
+            <property name="maximumPoolSize" value="${db.hikari.maximumPoolSize}"/>
+            <property name="autoCommit" value="${db.hikari.autoCommit}"/>
+            <property name="dataSourceProperties">
+                <props>
+                    <prop key="cachePrepStmts">false</prop>
+                    <prop key="prepStmtCacheSize">250</prop>
+                    <prop key="prepStmtCacheSqlLimit">2048</prop>
+                    <prop key="useServerPrepStmts">false</prop>
+                    <prop key="useLocalSessionState">true</prop>
+                    <prop key="rewriteBatchedStatements">true</prop>
+                    <prop key="cacheResultSetMetadata">false</prop>
+                    <prop key="cacheServerConfiguration">true</prop>
+                    <prop key="elideSetAutoCommits">true</prop>
+                    <prop key="maintainTimeStats">false</prop>
+                </props>
+            </property>
+        </bean>
+    </beans>
+</beans>
